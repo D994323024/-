@@ -22,13 +22,13 @@ include("../config.inc.php"); //單純調整時間
 	*/ 
 	//該function 下 http_tax_page 是輸出網頁 其他輸出xml 需呼叫 xml_transform_array 轉為陣列模式或是自行轉成需要的型態
 class customs{
-	 private  $user_id  = "xxxxxxxxxx";
-	 private  $enterprise = "xxxxxxxxx";	//公司
-	 private  $enterprise_code = "xxxxxxxxx";				//公司代碼
-	 private  $store_name = "xxxxxxxxx";						//購物網站名稱
-	 private  $store_code = "xxxxxx";							//購物網站代碼
-	 private  $oto_store_code = "xxxxxx";					//OTO店鋪代碼	
-	 private  $user_key =  "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx";
+	 private  $user_id  = "icarry123456";
+	 private  $enterprise = "杭州我来寄电子商务有限公司";	//公司
+	 private  $enterprise_code = "3301961J78";				//公司代碼
+	 private  $store_name = "iCarry";						//購物網站名稱
+	 private  $store_code = "1255";							//購物網站代碼
+	 private  $oto_store_code = "20884";					//OTO店鋪代碼	
+	 private  $user_key =  "412ae701-014e-41f6-889f-3d74089e9d0d";
 	 private  $URL_base = "https://api2.kjb2c.com/dsapi/dsapi.do";
 	 private  $customs_array=array("栎社机场"=>"3109","北仑保税区"=>"3105","空港保税物流中心"=>"3115","梅山保税区"=>"3117","慈溪保税区"=>"3113");
 
@@ -48,7 +48,8 @@ class customs{
 	*  input xml 格式 
 	*  output array 格式
 	*/
-	
+
+
 	function xml_transform_array($xml_original){	//將輸出職轉成陣列
 		$xml = simplexml_load_string($xml_original);
 		$json = json_encode($xml);
@@ -141,35 +142,33 @@ class customs{
 		$producct_xml = "<Goods>{$producct_xml}</Goods>";
 		/*  <Goods>   貨物 end */
 	
-		$tax_amount = empty($orders_array['tax_amount'])?0:number_format($orders_array['tax_amount'],2);					//稅額(總共稅率)(取小數點第二位)		
-		$tariff_tax = empty($orders_array['tariff_tax'])?0:number_format($orders_array['tariff_tax'],2);					//tariff_tax 關稅(取小數點第二位)
-		$value_add_tax = empty($orders_array['value_add_tax'])?0:number_format($orders_array['value_add_tax'],2);			//value_add_tax 增值稅(取小數點第二位)
-		$consumption_tax = empty($orders_array['consumption_tax'])?0:number_format($orders_array['consumption_tax'],2);	//consumption_tax 消費稅(取小數點第二位)
-		$insurance_fee = empty($orders_array['insurance_fee'])?0:number_format($orders_array['insurance_fee'],2); //保價費
-		$shipping_fee = empty($orders_array['shipping_fee'])?0:number_format($orders_array['shipping_fee'],2); //運費
-		$orders_weight = number_format($orders_array['orders_weight'],2);//訂單總重量(取小數點第二位) 
+		$tax_amount = empty($orders_array['tax_amount'])?0:round($orders_array['tax_amount'],2);					//稅額(總共稅率)(取小數點第二位)		
+		$tariff_tax = empty($orders_array['tariff_tax'])?0:round($orders_array['tariff_tax'],2);					//tariff_tax 關稅(取小數點第二位)
+		$value_add_tax = empty($orders_array['value_add_tax'])?0:round($orders_array['value_add_tax'],2);			//value_add_tax 增值稅(取小數點第二位)
+		$consumption_tax = empty($orders_array['consumption_tax'])?0:round($orders_array['consumption_tax'],2);	//consumption_tax 消費稅(取小數點第二位)
+		$insurance_fee = empty($orders_array['insurance_fee'])?0:round($orders_array['insurance_fee'],2); //保價費
+		$shipping_fee = empty($orders_array['shipping_fee'])?0:round($orders_array['shipping_fee'],2); //運費
+		$orders_weight = round($orders_array['orders_weight'],2);//訂單總重量(取小數點第二位) 
 		
 		/* Promotions 優惠start */
 		$total_discount = "0"; //總折扣
 		if(!empty($orders_array['discount'])){
 			foreach($orders_array['discount'] as $key => $value){
-				$dis_amount = number_format($value['pro_amount'],2);
-				$promotions_xml .="<Promotion><ProAmount>{$dis_amount}</ProAmount><ProRemark>{$value['pro_description']}</ProRemark></Promotion>";
+				$promotions_xml .="<Promotion><ProAmount>{$value['pro_amount']}</ProAmount><ProRemark>{$value['pro_description']}</ProRemark></Promotion>";
 				$total_discount += $value['pro_amount'];
 			}
 		}
-		
+		/*
 		if(empty($promotions_xml)){
 			$promotions_xml .="<Promotion><ProAmount></ProAmount><ProRemark></ProRemark></Promotion>";
-		}
+		}*/
 		$promotions_xml = "<Promotions>{$promotions_xml}</Promotions>";			
+ 
 		
-		$total_discount = number_format($total_discount,2);
-		$total_discount = number_format($orders_array['total_discount'],2);//優惠總金額(取小數點第二位) 後面要用
 		/* Promotions 優惠end */
-		
+		 
 		/* orders 到Promotions 前的 start */
-		$order_amount = number_format($orders_array['total_amount'],2);
+		$order_amount = round($orders_array['total_amount'],2);
 		if($orders_array['buyer_name']==$orders_array['pay_name']){ //購買人與付款者是否相同
 			$buyer_is_pay = "1";
 		}else{
@@ -191,7 +190,7 @@ class customs{
 		<Idnum>{$orders_array['pay_id_card']}</Idnum><Name>{$orders_array['pay_name']}</Name><MerId>{$orders_array['mer_id']}</MerId></Pay>";
 		
 		
-		
+		 
 		
 		/* Pay  end */
 		
@@ -204,7 +203,7 @@ class customs{
 		
 		
 		$xml = $xml_head."<Message><Header><CustomsCode>{$this->enterprise_code}</CustomsCode><OrgName>{$this->enterprise}</OrgName><CreateTime>{$orders_array['create_time']}</CreateTime></Header><Body><Order>{$orders_message}{$promotions_xml}{$producct_xml}</Order>{$pay_xml}{$Logistics}</Body></Message>";		
-
+		
 		
 		$post=array("userid"=>$this->user_id,"timestamp"=>$date,"xmlstr"=>$xml,"sign"=>$sign,"msgtype"=>$msgtype,"customs"=>$customs);//要輸入的數值
 		$post = http_build_query($post);
@@ -1190,7 +1189,7 @@ class customs{
 		}
 		
 		$photo_array();
-		$wight =  number_format(($producct_array['wight']/1000),4);//保價費(取小數點第四位)
+		$wight =  round(($producct_array['wight']/1000),4);//保價費(取小數點第四位)
 		
 		$body_xml = "<Name>{$producct_array['name']}</Name><NameEn>{$producct_array['eng_name']}</NameEn><HsNumber>{$producct_array['hs_number']}</HsNumber><Weight>{$wight}</Weight><Property>{$producct_array['serving_size']}</Property>
 					<Gproduction>{$producct_array['product_sold_country']}</Gproduction><Brand>{$producct_array['brand']}</Brand><Unit>{$producct_array['unit_name']}</Unit><Guse>{$producct_array['guse']}</Guse>
@@ -1303,8 +1302,8 @@ class customs{
 		$date = date("Y-m-d H:i:s");	
 		$sign = md5("{$this->user_id}{$this->user_key}{$date}");
 		$customs = $this->customs_array[$customs_name]; //依照輸入的關稅口名稱變更代碼	
-		$shipping_fee  =  number_format($shipping_fee,2);//保價費(取小數點第二位)
-		$insurance_fee =  number_format($insurance_fee,2);//保價費(取小數點第二位)
+		$shipping_fee  =  round($shipping_fee,2);//保價費(取小數點第二位)
+		$insurance_fee =  round($insurance_fee,2);//保價費(取小數點第二位)
 		$product_xml="";
 		
 		foreach($product_array as $key=>$value){
