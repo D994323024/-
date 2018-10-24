@@ -1,5 +1,5 @@
 <?php
-include("../config.inc.php"); //單純調整時間 
+
 	/*
 	* PHP Version 5.6.37
 	* 宁波跨境贸易电子商务平台电商数据交换接口
@@ -14,6 +14,7 @@ include("../config.inc.php"); //單純調整時間
 	* private   $store_name 购物网站名称 PS:這個可不給 不影響方便確認
 	* private   $store_code 购物网站代码
 	* private   $oto_store_code OTO店鋪代碼
+	* private   $order_shop 店铺代码
 	* private   $user_key  申請服務的私鑰
 	* private   $URL_base   串接的網址
 	* private   $customs_array 關口名稱 與 輸出關口代碼
@@ -22,13 +23,14 @@ include("../config.inc.php"); //單純調整時間
 	*/ 
 	//該function 下 http_tax_page 是輸出網頁 其他輸出xml 需呼叫 xml_transform_array 轉為陣列模式或是自行轉成需要的型態
 class customs{
-	 private  $user_id  = "icarry123456";
-	 private  $enterprise = "杭州我来寄电子商务有限公司";	//公司
-	 private  $enterprise_code = "3301961J78";				//公司代碼
-	 private  $store_name = "iCarry";						//購物網站名稱
-	 private  $store_code = "1255";							//購物網站代碼
-	 private  $oto_store_code = "20884";					//OTO店鋪代碼	
-	 private  $user_key =  "412ae701-014e-41f6-889f-3d74089e9d0d";
+	 private  $user_id  = "XXXXXXXXXX";
+	 private  $enterprise = "XXXXXXXXXXXXXXXXXX";	//公司
+	 private  $enterprise_code = "XXXXXXXXX";				//公司代碼
+	 private  $store_name = "XXXXXXX";						//購物網站名稱
+	 private  $store_code = "XXXX";							//購物網站代碼
+	 private  $oto_store_code = "XXXXXX";					//OTO店鋪代碼
+	 private  $order_shop = "XXXXXXX";						//店铺代码
+	 private  $user_key =  "XXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 	 private  $URL_base = "https://api2.kjb2c.com/dsapi/dsapi.do";
 	 private  $customs_array=array("栎社机场"=>"3109","北仑保税区"=>"3105","空港保税物流中心"=>"3115","梅山保税区"=>"3117","慈溪保税区"=>"3113");
 
@@ -68,7 +70,7 @@ class customs{
 		*							orders_weight 訂單總重量(給公克)(原先要自動跑商品但可能有額外的包裝) ,buyer_id_card 購買人身分證 ,buyer_name 購買人姓名,
 		*			 
 		*	
-		*	 非必填	<orders部分>	store_code 店鋪代碼, package_flag 是否组合装标识（0=不是，1=是）,insurance_fee 保价费（无保价费时请设置0）
+		*	 非必填	<orders部分>	package_flag 是否组合装标识（0=不是，1=是）,insurance_fee 保价费（无保价费时请设置0）
 		*							buyer_tel 購買人手機號, buyer_email 購買人email, 
 		*			 				discount{  [0]=>array{[pro_amount]=>xx [pro_description]=> xx} //折扣金額 折扣說明 }
 		*			 				orders_memo_01 订单备用字段01, orders_memo_02, 订单备用字段02, orders_memo_03 订单备用字段03,
@@ -174,7 +176,7 @@ class customs{
 		}else{
 			$buyer_is_pay = "0";
 		}	
-		$orders_message = "<Operation>{$status}</Operation><TybType>1</TybType><MftNo>{$Mft_number}</MftNo><OrderShop>{$orders_array['store_code']}</OrderShop><OTOCode>{$this->oto_store_code}</OTOCode>
+		$orders_message = "<Operation>{$status}</Operation><TybType>1</TybType><MftNo>{$Mft_number}</MftNo><OrderShop>{$this->order_shop}</OrderShop><OTOCode>{$this->oto_store_code}</OTOCode>
 		<OrderFrom>{$this->store_code}</OrderFrom><PackageFlag>{$orders_array['package_flag']}</PackageFlag><OrderNo>{$orders_array['order_number']}</OrderNo><PostFee>{$shipping_fee}</PostFee>
 		<InsuranceFee>{$insurance_fee}</InsuranceFee><Amount>{$order_amount}</Amount><BuyerAccount>{$orders_array['buyer_account']}</BuyerAccount>
 		<Phone>{$orders_array['buyer_tel']}</Phone><Email>{$orders_array['buyer_email']}</Email><TaxAmount>{$tax_amount}</TaxAmount><TariffAmount>{$tariff_tax}</TariffAmount>
@@ -972,7 +974,7 @@ class customs{
 	*
 	*		<非必填>
 	*		Asnwho 採購人員, Asnwho_phone 採購人員聯絡方式, expected_date 預計收貨時間, memo 備註,  
-	*		entry_number 報關單號, sales_web 銷售網站, shipment 啟運港, ship_date 啟運時間, store_code 店鋪代碼,
+	*		entry_number 報關單號, sales_web 銷售網站, shipment 啟運港, ship_date 啟運時間, 
 	*					
 	*				}
 	*	input $product_array{	商品相關參數	$product_array = array{[0]=>array{[customs_no]=>"XXX",[quantity]=>"XXX" }   }這樣
@@ -1019,7 +1021,7 @@ class customs{
 		/* orders start  */
 		$order_xml = "<Asnwho>{$Asn_array['Asnwho']}</Asnwho><Asnwhophone>{$Asn_array['Asnwho_phone']}</Asnwhophone><Expected_date>{$Asn_array['expecteddate']}</Expecteddate><Remark>{$Asn_array['memo']}</Remark>
 		<WarehouseCode>{$Asn_array['warehouse_Code']}</WarehouseCode><PoNo>{$Asn_array['po_number']}</PoNo><EntryNo>{$Asn_array['entry_number']}</EntryNo><DeclNo>{$Asn_array['decl_number']}</DeclNo><SalesSite>{$Asn_array['sales_web']}</SalesSite>
-		<Shipment>{$Asn_array['shipment']}</Shipment><ShipDate>{$Asn_array['ship_date']}</ShipDate><OrderShop>{$Asn_array['store_code']}</OrderShop>";
+		<Shipment>{$Asn_array['shipment']}</Shipment><ShipDate>{$Asn_array['ship_date']}</ShipDate><OrderShop>{$this->order_shop}</OrderShop>";
 		/* orders end    */
 		
 		$xml = $xml_head."<Message><Header><CustomsCode>{$this->enterprise_code}</CustomsCode><OrgName>{$this->enterprise}</OrgName><CreateTime>{$create_time}</CreateTime><Body><Order>{$order_xml}{$po_xml}</Order></Body></Header></Message>";		
